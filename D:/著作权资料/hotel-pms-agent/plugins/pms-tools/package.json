@@ -1,0 +1,27 @@
+{
+  "name": "pms-tools",
+  "version": "1.0.0",
+  "description": "Hotel PMS cashier core tools plugin for DeepSeek Harness",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "cordis.patch.yml"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/schemastery": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
