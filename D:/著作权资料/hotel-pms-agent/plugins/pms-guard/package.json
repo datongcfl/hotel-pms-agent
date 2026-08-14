@@ -1,0 +1,21 @@
+{
+  "name": "pms-guard",
+  "version": "1.0.0",
+  "description": "Safety guard rails for Hotel PMS Agent",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": ["dist", "cordis.patch.yml"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/schemastery": "*"
+  }
+}
