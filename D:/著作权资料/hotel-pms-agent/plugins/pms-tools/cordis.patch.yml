@@ -1,0 +1,21 @@
+# pms-tools 插件配置
+- insert:
+  - id: pms-tools
+    name: pms-tools
+    config:
+      databaseUrl: ${PMS_DB_URL}
+      databaseType: mysql
+      paymentGateway: ${PAYMENT_GATEWAY_URL}
+      paymentKey: ${PAYMENT_GATEWAY_KEY}
+      invoiceSystemUrl: ${INVOICE_SYSTEM_URL}
+      hotelCode: HTL001
+      hotelName: 示例大酒店
+      currency: CNY
+      timezone: Asia/Shanghai
+      taxRate:
+        room: 0.06
+        catering: 0.06
+        goods: 0.13
+      serviceChargeRate: 0.10
+      halfDayDeadline: '14:00'
+      fullDayDeadline: '18:00'
