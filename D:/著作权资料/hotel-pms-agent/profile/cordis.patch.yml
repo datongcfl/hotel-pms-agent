@@ -1,0 +1,166 @@
+# ============================================
+# 酒店 PMS 收银 Agent - 主配置
+# ============================================
+# 此文件是 Profile 级别的配置层，覆盖所有 bundle 的默认配置。
+# 加载优先级：dsh-base → 各bundle → 本文件 → $DSH_HOME → --patch
+
+# --- 1. 模型配置 ---
+- id: default-model
+  name: '@deepseek-ai/dsh-agent-default-model'
+  config:
+    provider: deepseek
+    model: deepseek-chat
+
+# --- 2. Agent 循环 ---
+- id: agent-loop
+  name: '@deepseek-ai/dsh-agent-loop'
+  config:
+    maxParallelToolCalls: 1
+    agents:
+      - id: pms-cashier
+        cwd: /app/hotel-pms
+
+# --- 3. 系统提示词 ---
+- id: system-prompt
+  name: '@deepseek-ai/dsh-system-prompt'
+  config:
+    includeHarnessIdentity: true
+    includeRuntimeContext: true
+    persona: |
+      你是酒店PMS收银助手，负责协助前台和财务人员处理收银业务。
+
+      ## 核心职责
+      1. 入住登记与房费计算
+      2. 退房结算与账单生成
+      3. 多业态消费合并（客房、餐饮、会议、SPA、minibar）
+      4. 支付处理（现金、银行卡、微信/支付宝、挂账、协议）
+      5. 发票开具（增值税普票/专票）
+      6. 交班、日结、财务报表
+
+      ## 计费规则
+      - 房费按入住日次日开始计算，退房日14:00前免收当日房费
+      - 半日租：14:00-18:00加收50%房费
+      - 全日租：18:00后加收100%房费
+      - 服务费：10%（协议单位免收）
+      - 增值税：6%（住宿服务）
+      - 预授权：入住时冻结预估房费，退房时扣除实际消费后释放
+
+      ## 支付规则
+      - 单笔超过5000元需值班经理审批
+      - 退款原路返回，现金退款需双人复核
+      - 挂账仅限签约协议单位，需核对协议有效期
+      - 外币收取按当日现钞买入价折算
+
+      ## 安全要求
+      - 所有金额计算必须双向校验
+      - 涉及退款的操作需二次确认
+      - 不得泄露客人隐私信息（房号、身份证、手机号）
+      - 发票信息需与税务登记一致
+
+      ## 异常处理
+      - 账目不平：先挂账处理，记录差异，上报财务
+      - 系统故障：手工单据记录，恢复后补录
+      - 客人拒付：通知值班经理，不做强制扣款
+
+    toolOrder:
+      - query_guest
+      - query_room
+      - query_billing
+      - calculate_checkout
+      - post_charge
+      - process_payment
+      - generate_invoice
+      - generate_report
+      - shift_handover
+      - daily_close
+      - bash
+      - file_editor
+
+# --- 4. 工具展示模式 ---
+- id: tool-presentation
+  name: '@deepseek-ai/dsh-agent-tool-presentation'
+  config:
+    mode: native
+
+# --- 5. 工作空间上下文 ---
+- id: workspace-context
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 100000
+    projectRootMarkers:
+      - package.json
+      - pms.config.json
+    instructionFileCandidates:
+      - AGENTS.md
+      - PMS_RULES.md
+
+# --- 6. 会话持久化 ---
+- id: session-persistence
+  config:
+    persistenceRoot: /data/pms-sessions
+    packChunks: true
+    persistenceCompression: zstd
+
+# --- 7. 技能 ---
+- id: skills
+  config:
+    enabled: true
+    filesystem:
+      roots:
+        - path: /app/hotel-pms/skills
+    tool:
+      autoDiscover: true
+
+# --- 8. 目标管理 ---
+- id: goals
+  config:
+    domain:
+      maxActiveGoals: 10
+    tool:
+      enabled: true
+
+# --- 9. Bash 工具（受限） ---
+- id: tool-bash
+  config:
+    sandbox: true
+    timeout: 10000
+
+# --- 10. 后台任务 ---
+- id: jobs
+  config:
+    maxConcurrent: 2
+    admissionPolicy: conservative
+
+# --- 11. PMS 自定义工具 ---
+- id: pms-tools
+  name: pms-tools
+  config:
+    databaseUrl: ${PMS_DB_URL}
+    databaseType: mysql
+    paymentGateway: ${PAYMENT_GATEWAY_URL}
+    paymentKey: ${PAYMENT_GATEWAY_KEY}
+    invoiceSystemUrl: ${INVOICE_SYSTEM_URL}
+    hotelCode: HTL001
+    hotelName: 示例大酒店
+    currency: CNY
+    timezone: Asia/Shanghai
+    taxRate:
+      room: 0.06
+      catering: 0.06
+      goods: 0.13
+    serviceChargeRate: 0.10
+    halfDayDeadline: '14:00'
+    fullDayDeadline: '18:00'
+
+# --- 12. 安全护栏 ---
+- id: pms-guard
+  name: pms-guard
+  config:
+    requireConfirmationOperations:
+      - refund
+      - void_invoice
+      - adjust_balance
+      - write_off
+    maxRefundAmount: 10000
+    auditLogPath: /var/log/pms-agent-audit.log
+    sensitiveDataMasking: true
