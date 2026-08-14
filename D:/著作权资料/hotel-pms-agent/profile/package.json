@@ -1,0 +1,16 @@
+{
+  "name": "dsh-profile-hotel-pms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hotel PMS Cashier Agent based on DeepSeek Harness",
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "pms-tools",
+        "pms-knowledge",
+        "pms-guard"
+      ]
+    }
+  }
+}
