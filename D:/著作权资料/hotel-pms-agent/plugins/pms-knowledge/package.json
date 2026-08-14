@@ -1,0 +1,13 @@
+{
+  "name": "pms-knowledge",
+  "version": "1.0.0",
+  "description": "Hotel business knowledge plugin for PMS Agent",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": ["dist", "cordis.patch.yml"],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
