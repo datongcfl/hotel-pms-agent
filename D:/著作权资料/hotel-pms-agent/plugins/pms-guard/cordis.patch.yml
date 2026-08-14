@@ -1,0 +1,13 @@
+# pms-guard 安全护栏插件配置
+- insert:
+  - id: pms-guard
+    name: pms-guard
+    config:
+      requireConfirmationOperations:
+        - refund
+        - void_invoice
+        - adjust_balance
+        - write_off
+      maxRefundAmount: 10000
+      auditLogPath: /var/log/pms-agent-audit.log
+      sensitiveDataMasking: true
